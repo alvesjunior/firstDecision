@@ -1,0 +1,29 @@
+.env
+.idea/
+.vscode/
+.DS_Store
+*.log
+
+# Backend (Laravel) - tudo dentro de backend/
+backend/vendor/
+backend/node_modules/
+backend/.env
+backend/storage/*.key
+backend/public/storage
+backend/public/hot
+backend/public/build
+backend/storage/pail
+backend/storage/api-docs
+backend/.phpunit.result.cache
+backend/.phpunit.cache/
+backend/Homestead.json
+backend/Homestead.yaml
+backend/auth.json
+
+# Docker
+docker/data/
+
+# Editor / IDE local settings
+.claude/
+.cursor/
+.aider*

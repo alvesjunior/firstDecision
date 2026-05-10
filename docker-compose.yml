@@ -1,0 +1,75 @@
+services:
+  app:
+    build:
+      context: ./docker/php
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: firstdecision-app
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-firstdecision}
+      DB_USERNAME: ${DB_USERNAME:-firstdecision}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - firstdecision
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: firstdecision-nginx
+    ports:
+      - "${APP_PORT:-8000}:80"
+    volumes:
+      - ./backend:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - firstdecision
+
+  db:
+    image: mysql:8.0
+    container_name: firstdecision-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-firstdecision}
+      MYSQL_USER: ${DB_USERNAME:-firstdecision}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - firstdecision
+
+  node:
+    image: node:20-alpine
+    container_name: firstdecision-node
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+    ports:
+      - "${VITE_PORT:-5173}:5173"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    networks:
+      - firstdecision
+
+volumes:
+  dbdata:
+
+networks:
+  firstdecision:
+    driver: bridge

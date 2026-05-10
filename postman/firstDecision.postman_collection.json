@@ -1,0 +1,257 @@
+{
+    "info": {
+        "name": "firstDecision API",
+        "description": "Coleção da API REST do projeto firstDecision (Laravel 13 + Sanctum).\n\n**Como usar:**\n\n1. Importe esta coleção e o environment `firstDecision.local.postman_environment.json`.\n2. Selecione o environment `firstDecision (Local)` no canto superior direito do Postman.\n3. Rode `Auth › Login` (ou `Register`) — o token Sanctum é salvo automaticamente na variável `token` via script de teste.\n4. As demais rotas já usam `Bearer {{token}}` automaticamente.\n\n**Endpoints principais:**\n- Autenticação: `/api/auth/*`\n- Produtos (CRUD): `/api/products/*`\n\nFormato padrão de resposta: `{ data, message, errors }` (com `meta` em endpoints paginados).\n\nDocumentação completa via Swagger UI: {{base_url}}/api/documentation",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "_postman_id": "5b1f7c2e-firstdecision-collection"
+    },
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            { "key": "token", "value": "{{token}}", "type": "string" }
+        ]
+    },
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "// Garante headers padrão em todas as requests",
+                    "pm.request.headers.upsert({ key: 'Accept', value: 'application/json' });",
+                    "pm.request.headers.upsert({ key: 'Content-Type', value: 'application/json' });"
+                ]
+            }
+        }
+    ],
+    "variable": [
+        { "key": "base_url", "value": "http://localhost:8000", "type": "string" },
+        { "key": "token", "value": "", "type": "string" },
+        { "key": "product_id", "value": "1", "type": "string" }
+    ],
+    "item": [
+        {
+            "name": "Auth",
+            "description": "Endpoints de autenticação via Sanctum (token Bearer).",
+            "item": [
+                {
+                    "name": "Register",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Retorna token', () => pm.expect(json.data).to.have.property('token'));",
+                                    "if (json.data && json.data.token) {",
+                                    "    pm.environment.set('token', json.data.token);",
+                                    "    pm.collectionVariables.set('token', json.data.token);",
+                                    "    console.log('Token salvo em {{token}}');",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "auth": { "type": "noauth" },
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Maria Silva\",\n    \"email\": \"maria@test.com\",\n    \"password\": \"segredo123\",\n    \"password_confirmation\": \"segredo123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/register",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "register"]
+                        },
+                        "description": "Cria um novo usuário e retorna `{ user, token }`. O token é salvo automaticamente na variável `token` para uso nas demais requests."
+                    }
+                },
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Retorna token', () => pm.expect(json.data).to.have.property('token'));",
+                                    "if (json.data && json.data.token) {",
+                                    "    pm.environment.set('token', json.data.token);",
+                                    "    pm.collectionVariables.set('token', json.data.token);",
+                                    "    console.log('Token salvo em {{token}}');",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "auth": { "type": "noauth" },
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"admin@firstdecision.test\",\n    \"password\": \"password\",\n    \"device_name\": \"postman\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/login",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "login"]
+                        },
+                        "description": "Autentica com credenciais do seed (`admin@firstdecision.test` / `password`). Salva o token retornado na variável `token`."
+                    }
+                },
+                {
+                    "name": "Me",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/me",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "me"]
+                        },
+                        "description": "Retorna o usuário autenticado. Requer Bearer token."
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                                    "pm.environment.set('token', '');",
+                                    "pm.collectionVariables.set('token', '');"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/logout",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "logout"]
+                        },
+                        "description": "Revoga o token atual e limpa a variável local."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Products",
+            "description": "CRUD de produtos. Todas as rotas requerem `auth:sanctum`.",
+            "item": [
+                {
+                    "name": "List (com filtros)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/products?per_page=10&page=1",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "products"],
+                            "query": [
+                                { "key": "search", "value": "", "description": "Busca em nome e descrição", "disabled": true },
+                                { "key": "min_price", "value": "", "description": "Preço mínimo", "disabled": true },
+                                { "key": "max_price", "value": "", "description": "Preço máximo", "disabled": true },
+                                { "key": "min_stock", "value": "", "description": "Estoque mínimo", "disabled": true },
+                                { "key": "max_stock", "value": "", "description": "Estoque máximo", "disabled": true },
+                                { "key": "sort", "value": "created_at", "description": "name | price | stock | created_at", "disabled": true },
+                                { "key": "direction", "value": "desc", "description": "asc | desc", "disabled": true },
+                                { "key": "per_page", "value": "10", "description": "1 a 100" },
+                                { "key": "page", "value": "1" }
+                            ]
+                        },
+                        "description": "Listagem paginada. Habilite os query params para filtrar."
+                    }
+                },
+                {
+                    "name": "Get",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/products/{{product_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "products", "{{product_id}}"]
+                        },
+                        "description": "Retorna detalhes de um produto. Use `product_id` (variável da coleção) ou substitua por um ID válido."
+                    }
+                },
+                {
+                    "name": "Create",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                                    "const json = pm.response.json();",
+                                    "if (json.data && json.data.id) {",
+                                    "    pm.collectionVariables.set('product_id', String(json.data.id));",
+                                    "    console.log('product_id atualizado para ' + json.data.id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Cadeira Gamer Pro\",\n    \"description\": \"Cadeira ergonômica com apoio lombar.\",\n    \"price\": 1599.90,\n    \"stock\": 25\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/products",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "products"]
+                        },
+                        "description": "Cria um produto. O ID retornado é salvo em `product_id` para uso nos próximos requests."
+                    }
+                },
+                {
+                    "name": "Update",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Cadeira Gamer Pro v2\",\n    \"price\": 1799.00,\n    \"stock\": 30\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/products/{{product_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "products", "{{product_id}}"]
+                        },
+                        "description": "Atualização total/parcial. Todos os campos são opcionais (`sometimes`)."
+                    }
+                },
+                {
+                    "name": "Delete",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/products/{{product_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "products", "{{product_id}}"]
+                        },
+                        "description": "Remove o produto."
+                    }
+                }
+            ]
+        }
+    ]
+}
