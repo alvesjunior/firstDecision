@@ -9,6 +9,7 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./backend:/var/www/html
+      - vendor:/var/www/html/vendor
     environment:
       DB_HOST: db
       DB_PORT: 3306
@@ -69,6 +70,7 @@ services:
 
 volumes:
   dbdata:
+  vendor:
 
 networks:
   firstdecision:

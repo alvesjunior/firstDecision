@@ -33,10 +33,10 @@ RUN apk add --no-cache \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-RUN addgroup -g ${GID} -S app \
-    && adduser -u ${UID} -S app -G app \
+RUN (getent group ${GID} > /dev/null || addgroup -g ${GID} -S app) \
+    && adduser -u ${UID} -S app -G "$(getent group ${GID} | cut -d: -f1)" \
     && mkdir -p /var/www/html \
-    && chown -R app:app /var/www/html
+    && chown -R app:${GID} /var/www/html
 
 WORKDIR /var/www/html
 

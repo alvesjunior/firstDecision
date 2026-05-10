@@ -91,6 +91,8 @@ docker-compose exec app php artisan migrate --seed
 docker-compose exec node npm run build
 ```
 
+> **Nota para usuários macOS:** antes do `docker-compose up`, ajuste `UID` e `GID` no `.env` para os valores do seu usuário (`id -u` e `id -g` — tipicamente `501` e `20`). Os defaults `1000`/`1000` do `.env.example` atendem Linux/WSL nativamente, mas no macOS o mismatch entre o UID do host e o do usuário `app` dentro do container causa erros de permissão em `backend/vendor/` durante o `composer install`.
+
 A aplicação ficará disponível em:
 
 - **Web (SPA):** http://localhost:8000
