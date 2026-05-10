@@ -10,6 +10,22 @@ Aplicação fullstack desenvolvida como teste técnico para a vaga de **Desenvol
 
 ---
 
+## Telas
+
+### Login
+
+Tela de autenticação com validação client-side, mensagens de erro e dica das credenciais do seed para facilitar o teste.
+
+![Tela de login](docs/screenshots/login.png)
+
+### Listagem de produtos
+
+Listagem com paginação, busca por nome/descrição, filtros por faixa de preço e estoque, indicador visual de estoque (vermelho quando zerado, verde caso contrário) e ações inline (Ver / Editar / Excluir).
+
+![Listagem de produtos](docs/screenshots/tabela.png)
+
+---
+
 ## Estrutura
 
 ```
