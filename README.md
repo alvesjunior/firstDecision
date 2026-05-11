@@ -73,25 +73,17 @@ firstDecision/
 git clone <url-do-repo>
 cd firstDecision
 
-# 2. Copiar variáveis de ambiente
-cp .env.example .env                       # variáveis do compose
-cp backend/.env.example backend/.env       # variáveis do Laravel
+# 2. Copiar variáveis de ambiente do compose (o backend/.env é criado automaticamente)
+cp .env.example .env
 
-# 3. Subir os contêineres
+# 3. Subir os contêineres — pronto.
 docker-compose up -d --build
 
-# 4. Instalar dependências PHP e gerar APP_KEY
-docker-compose exec app composer install
-docker-compose exec app php artisan key:generate
-
-# 5. Rodar migrations e seeders
-docker-compose exec app php artisan migrate --seed
-
-# 6. (Opcional) Build de produção do frontend
+# 4. (Opcional) Build de produção do frontend
 docker-compose exec node npm run build
 ```
 
-> **Nota para usuários macOS:** antes do `docker-compose up`, ajuste `UID` e `GID` no `.env` para os valores do seu usuário (`id -u` e `id -g` — tipicamente `501` e `20`). Os defaults `1000`/`1000` do `.env.example` atendem Linux/WSL nativamente, mas no macOS o mismatch entre o UID do host e o do usuário `app` dentro do container causa erros de permissão em `backend/vendor/` durante o `composer install`.
+> O entrypoint do container `app` executa automaticamente, em toda subida: criação do `backend/.env` (se faltar), `composer install` (se faltar `vendor/`), `php artisan key:generate` (se a `APP_KEY` estiver vazia) e `php artisan migrate` (com `--seed` quando o banco está vazio). O UID/GID do usuário interno é alinhado em runtime ao dono do bind mount, então o mesmo `docker-compose up` funciona em Linux, WSL e macOS sem precisar ajustar nada.
 
 A aplicação ficará disponível em:
 

@@ -1,13 +1,11 @@
 FROM php:8.4-fpm-alpine
 
-ARG UID=1000
-ARG GID=1000
-
 RUN apk add --no-cache \
         bash \
         git \
         curl \
         unzip \
+        su-exec \
         libzip-dev \
         oniguruma-dev \
         icu-dev \
@@ -33,14 +31,11 @@ RUN apk add --no-cache \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-RUN (getent group ${GID} > /dev/null || addgroup -g ${GID} -S app) \
-    && adduser -u ${UID} -S app -G "$(getent group ${GID} | cut -d: -f1)" \
-    && mkdir -p /var/www/html \
-    && chown -R app:${GID} /var/www/html
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 WORKDIR /var/www/html
 
-USER app
-
 EXPOSE 9000
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["php-fpm"]
